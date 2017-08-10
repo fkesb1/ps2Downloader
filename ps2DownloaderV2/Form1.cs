@@ -27,13 +27,13 @@ namespace ps2DownloaderV2
 
         private void download_btn_Click(object sender, EventArgs e)
         {
-            download_btn.Enabled = false;
             string filename = filename_txtbox.Text;
             if (filename.Length == 0)
             {
                 MessageBox.Show("PLEASE INPUT FILENAME");
                 return;
             }
+            download_btn.Enabled = false;
             int server_code = 1;
             if (server_list.SelectedText == "server1")
             {

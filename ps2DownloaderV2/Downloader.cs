@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Windows.Forms;
+using SevenZip.Compression.LZMA;
 
 namespace ps2DownloaderV2
 {
@@ -49,10 +49,9 @@ namespace ps2DownloaderV2
                 string sendCheckSum = BitConverter.ToString(checksum).Replace("-", string.Empty).ToLower();
                 if (checkValid(sha, sendCheckSum))
                 {
-                    l.Items.Add("Start unpack. please wait");
-                    Process p = Process.Start("7z.exe", "e " + filename + ".lzma");
-                    p.WaitForExit();
                     stream.Close();
+                    l.Items.Add("Start unpack. please wait");
+                    decompress(@".\"+filename+".lzma",@".\"+filename);
                     File.Delete(filename + ".lzma");
                     l.Items.Add("Unpack complete.");
                 }
@@ -80,6 +79,25 @@ namespace ps2DownloaderV2
                 return true;
             }
             return false;
+        }
+        private void decompress(string target,string outFile)
+        {
+            Decoder decoder = new Decoder();
+            FileStream input = new FileStream(target, FileMode.Open);
+            FileStream output = new FileStream(outFile, FileMode.Create);
+
+            byte[] properties = new byte[5];
+            input.Read(properties, 0, 5);
+
+            byte[] fileLengthBytes = new byte[8];
+            input.Read(fileLengthBytes, 0, 8);
+            long fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
+
+            decoder.SetDecoderProperties(properties);
+            decoder.Code(input, output, input.Length, fileLength, null);
+            output.Flush();
+            output.Close();
+            input.Close();
         }
     }
 }
